@@ -30,7 +30,8 @@ import {
   Leaf,
   Flower2,
   TreePine,
-  Wind
+  Wind,
+  ArrowUpDown
 } from 'lucide-react';
 import { Book, Genre, Vocabulary, Note, UserProfile } from './types';
 import { getDefinition } from './services/geminiService';
@@ -44,9 +45,12 @@ const AVATAR_STYLES = [
   { id: 'notionists', label: 'Bloom' }
 ];
 
+type SortOption = 'recent' | 'title' | 'author' | 'rating';
+
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [books, setBooks] = useState<Book[]>([]);
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [profile, setProfile] = useState<UserProfile>({
     name: 'Garden Reader',
     bio: 'Nurturing ideas like spring blossoms.',
@@ -86,8 +90,9 @@ const App: React.FC = () => {
   }), [books]);
 
   const filteredBooks = useMemo(() => {
-    let result = books;
+    let result = [...books];
     if (activeTab === 'college') result = result.filter(b => b.isCollegeMaterial);
+    
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(b => 
@@ -96,8 +101,17 @@ const App: React.FC = () => {
         b.subgenres.some(s => s.toLowerCase().includes(q))
       );
     }
+
+    // Sort within genre view
+    result.sort((a, b) => {
+      if (sortBy === 'title') return a.title.localeCompare(b.title);
+      if (sortBy === 'author') return a.author.localeCompare(b.author);
+      if (sortBy === 'rating') return b.rating - a.rating;
+      return b.lastUpdated - a.lastUpdated; // Default recent
+    });
+
     return result;
-  }, [books, activeTab, searchQuery]);
+  }, [books, activeTab, searchQuery, sortBy]);
 
   const handleAddBook = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -502,28 +516,50 @@ const App: React.FC = () => {
           )}
 
           {(activeTab === 'library' || activeTab === 'college') && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-10">
-              {filteredBooks.map(book => (
-                <div key={book.id} onClick={() => setSelectedBook(book)} className="group cursor-pointer">
-                  <div className="relative aspect-[2/3] spring-card overflow-hidden shadow-lg group-hover:-translate-y-4 transition-all duration-500 mb-6 bg-white/50">
-                    <img src={book.coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt={book.title} />
-                    <div className="absolute top-4 right-4 flex flex-col gap-2">
-                       {book.isCompleted && <div className="bg-[#f28482] p-2.5 rounded-2xl text-white shadow-xl ring-2 ring-white"><CheckCircle2 size={12} /></div>}
-                       {book.isCollegeMaterial && <div className="bg-[#bc8a5f] p-2.5 rounded-2xl text-white shadow-xl ring-2 ring-white"><GraduationCap size={12} /></div>}
+            <div className="space-y-8">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-[#6a994e] text-sm font-bold">
+                  <ArrowUpDown size={16} />
+                  <span>Sort By:</span>
+                  <select 
+                    value={sortBy} 
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    className="bg-transparent border-b-2 border-[#a7c957] outline-none cursor-pointer hover:text-[#386641] transition-colors"
+                  >
+                    <option value="recent">Recent Growth</option>
+                    <option value="title">Alphabetical (Title)</option>
+                    <option value="author">Alphabetical (Author)</option>
+                    <option value="rating">Vibrant Star Rating</option>
+                  </select>
+                </div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#bc8a5f]">
+                  {filteredBooks.length} Blooms Found
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-10">
+                {filteredBooks.map(book => (
+                  <div key={book.id} onClick={() => setSelectedBook(book)} className="group cursor-pointer">
+                    <div className="relative aspect-[2/3] spring-card overflow-hidden shadow-lg group-hover:-translate-y-4 transition-all duration-500 mb-6 bg-white/50">
+                      <img src={book.coverUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt={book.title} />
+                      <div className="absolute top-4 right-4 flex flex-col gap-2">
+                        {book.isCompleted && <div className="bg-[#f28482] p-2.5 rounded-2xl text-white shadow-xl ring-2 ring-white"><CheckCircle2 size={12} /></div>}
+                        {book.isCollegeMaterial && <div className="bg-[#bc8a5f] p-2.5 rounded-2xl text-white shadow-xl ring-2 ring-white"><GraduationCap size={12} /></div>}
+                      </div>
+                    </div>
+                    <div className="px-2">
+                      <h4 className="font-bold text-[#386641] line-clamp-1 serif-font text-xl mb-1">{book.title}</h4>
+                      <p className="text-[10px] font-bold text-[#6a994e] uppercase tracking-[0.2em]">{book.author}</p>
                     </div>
                   </div>
-                  <div className="px-2">
-                    <h4 className="font-bold text-[#386641] line-clamp-1 serif-font text-xl mb-1">{book.title}</h4>
-                    <p className="text-[10px] font-bold text-[#6a994e] uppercase tracking-[0.2em]">{book.author}</p>
+                ))}
+                {filteredBooks.length === 0 && (
+                  <div className="col-span-full py-24 text-center">
+                      <Wind size={64} className="mx-auto mb-4 opacity-10 text-[#6a994e] animate-sway" />
+                      <p className="serif-font italic text-2xl text-[#6a994e] opacity-40">No blooms found in this patch...</p>
                   </div>
-                </div>
-              ))}
-              {filteredBooks.length === 0 && (
-                 <div className="col-span-full py-24 text-center">
-                    <Wind size={64} className="mx-auto mb-4 opacity-10 text-[#6a994e] animate-sway" />
-                    <p className="serif-font italic text-2xl text-[#6a994e] opacity-40">No blooms found in this patch...</p>
-                 </div>
-              )}
+                )}
+              </div>
             </div>
           )}
 
