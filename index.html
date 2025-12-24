@@ -21,88 +21,56 @@
 
         body {
             font-family: 'Lexend', sans-serif;
-            background-color: #f7f9f2; /* Very light spring green wash */
+            background-color: #f7f9f2; 
             background-image: 
                 radial-gradient(circle at 2px 2px, rgba(167, 201, 87, 0.05) 1px, transparent 0);
             background-size: 40px 40px;
             color: #386641;
+            overflow-x: hidden;
         }
 
-        .serif-font {
-            font-family: 'Crimson Pro', serif;
-        }
+        .serif-font { font-family: 'Crimson Pro', serif; }
 
         .spring-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(8px);
-            border: 2px solid rgba(167, 201, 87, 0.3);
-            border-radius: 2.5rem;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(167, 201, 87, 0.2);
+            border-radius: 2rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
-            overflow: hidden;
-        }
-
-        .spring-card::after {
-            content: '✿';
-            position: absolute;
-            bottom: -10px;
-            right: -10px;
-            font-size: 2rem;
-            color: rgba(242, 132, 130, 0.1);
-            transform: rotate(-15deg);
         }
 
         .spring-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-5px);
             border-color: var(--sprout);
-            box-shadow: 0 20px 40px -15px rgba(106, 153, 78, 0.2);
-            background: white;
-        }
-
-        ::-webkit-scrollbar {
-            width: 12px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f7f9f2;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #a7c957;
-            border-radius: 20px;
-            border: 4px solid #f7f9f2;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #6a994e;
+            box-shadow: 0 15px 30px -10px rgba(106, 153, 78, 0.15);
         }
 
         /* Whimsical Animations */
         @keyframes float {
             0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-12px) rotate(2deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
             100% { transform: translateY(0px) rotate(0deg); }
         }
-        .animate-float {
-            animation: float 5s ease-in-out infinite;
-        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
 
         @keyframes sway {
-            0% { transform: rotate(-3deg); }
-            50% { transform: rotate(3deg); }
-            100% { transform: rotate(-3deg); }
+            0% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+            100% { transform: rotate(-2deg); }
         }
-        .animate-sway {
-            animation: sway 4s ease-in-out infinite;
+        .animate-sway { animation: sway 4s ease-in-out infinite; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f7f9f2; }
+        ::-webkit-scrollbar-thumb {
+            background: #a7c957;
+            border-radius: 10px;
         }
 
         @media print {
             .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body { background-color: white !important; }
-        }
-        .print-only { display: none; }
-
-        /* Botanical borders */
-        .leaf-border {
-            border-image: linear-gradient(to right, #a7c957, #6a994e) 1;
+            body { background: white !important; }
         }
     </style>
 <script type="importmap">
