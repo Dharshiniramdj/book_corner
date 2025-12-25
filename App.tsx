@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Book as BookIcon, 
   Library, 
@@ -37,7 +37,9 @@ import {
   Palette,
   RotateCcw,
   FlipHorizontal,
-  ShieldCheck
+  ShieldCheck,
+  MoreVertical,
+  Settings2
 } from 'lucide-react';
 import { Book, Genre, Vocabulary, Note, UserProfile } from './types';
 import { getDefinition } from './services/geminiService';
@@ -67,6 +69,7 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<ThemeMode>('dawn');
   const [isProfileEditing, setIsProfileEditing] = useState(false);
   const [isAvatarStudioOpen, setIsAvatarStudioOpen] = useState(false);
+  const studioRef = useRef<HTMLDivElement>(null);
   
   const [profile, setProfile] = useState<UserProfile>({
     name: 'Air Voyager',
@@ -86,6 +89,16 @@ const App: React.FC = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (studioRef.current && !studioRef.current.contains(event.target as Node)) {
+        setIsAvatarStudioOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     try {
@@ -386,21 +399,101 @@ const App: React.FC = () => {
 
           {activeTab === 'profile' && (
             <div className="max-w-5xl mx-auto space-y-12">
-              <div className="glass-card p-12 flex flex-col md:flex-row items-center gap-16">
+              <div className="glass-card p-12 flex flex-col md:flex-row items-center gap-16 relative">
                 <div className="relative group">
-                  <div className="w-48 h-48 rounded-[3.5rem] p-1.5 rainbow-gradient shadow-2xl">
+                  <div className="w-48 h-48 rounded-[3.5rem] p-1.5 rainbow-gradient shadow-2xl overflow-hidden">
                     <div className="w-full h-full rounded-[3.2rem] bg-white overflow-hidden p-2">
                       <img src={getAvatarUrl(profile)} className="w-full h-full" alt="Avatar" />
                     </div>
                   </div>
-                  <div className="absolute -bottom-2 -right-2 flex flex-col gap-2">
+                  <div className="absolute -bottom-2 -right-2 flex flex-col gap-2 z-20">
                     <button 
-                      onClick={() => setProfile({...profile, avatarSeed: Math.random().toString()})}
-                      title="New Seed"
-                      className="p-3 bg-[#8A9A5B] text-white rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all"
+                      onClick={() => setIsAvatarStudioOpen(!isAvatarStudioOpen)}
+                      title="Avatar Studio"
+                      className={`p-3 text-white rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all ${isAvatarStudioOpen ? 'bg-[#8E9AAF]' : 'bg-[#8A9A5B]'}`}
                     >
-                      <RefreshCw size={20} />
+                      <Palette size={24} />
                     </button>
+                    
+                    {/* Avatar Studio Floating Dropdown */}
+                    {isAvatarStudioOpen && (
+                      <div 
+                        ref={studioRef}
+                        className="absolute bottom-14 right-0 w-[320px] sm:w-[480px] glass-card bg-white/95 backdrop-blur-3xl shadow-2xl p-8 space-y-8 animate-in zoom-in-95 fade-in duration-200 origin-bottom-right z-50 border-2 border-[#8A9A5B]/30"
+                      >
+                        <div className="flex items-center justify-between border-b border-[#border] pb-4">
+                          <h4 className="text-xl font-bold serif-font flex items-center gap-2">
+                            <Palette size={20} className="text-[#8E9AAF]" /> Avatar Studio
+                          </h4>
+                          <button onClick={() => setIsAvatarStudioOpen(false)} className="text-[#8E9AAF] hover:text-[#8A9A5B]">
+                             <X size={20} />
+                          </button>
+                        </div>
+
+                        <div className="space-y-6">
+                           <div className="space-y-3">
+                              <p className="text-[10px] font-bold uppercase opacity-40 tracking-widest">Select Expression</p>
+                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                                 {AVATAR_STYLES.map(style => (
+                                    <button 
+                                       key={style.id}
+                                       onClick={() => setProfile({...profile, avatarChoice: style.id})}
+                                       className={`p-2 rounded-xl transition-all border flex flex-col items-center gap-1 group ${profile.avatarChoice === style.id ? 'border-[#8A9A5B] bg-[#8A9A5B]/10' : 'border-transparent bg-white hover:bg-[#8A9A5B]/5'}`}
+                                    >
+                                       <img src={`https://api.dicebear.com/7.x/${style.id}/svg?seed=preview`} className="w-10 h-10 group-hover:scale-110 transition-transform" alt={style.label} />
+                                       <p className="text-[7px] font-bold uppercase tracking-tighter opacity-60 truncate w-full text-center">{style.label}</p>
+                                    </button>
+                                 ))}
+                              </div>
+                           </div>
+
+                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 border-t border-[#border]">
+                              <div className="space-y-3">
+                                 <p className="text-[10px] font-bold uppercase opacity-40 tracking-widest">Physics</p>
+                                 <div className="flex flex-col gap-3">
+                                    <button 
+                                       onClick={() => setProfile({...profile, avatarFlip: !profile.avatarFlip})}
+                                       className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold transition-all border-2 ${profile.avatarFlip ? 'bg-[#8A9A5B] text-white border-[#8A9A5B]' : 'bg-transparent border-[#border] opacity-60 hover:opacity-100'}`}
+                                    >
+                                       <FlipHorizontal size={14} /> Flip Image
+                                    </button>
+                                    <div className="space-y-1">
+                                       <div className="flex justify-between text-[9px] font-bold opacity-40">
+                                          <span>ROTATION</span>
+                                          <span>{profile.avatarRotate || 0}°</span>
+                                       </div>
+                                       <input 
+                                          type="range" min="0" max="360" step="45"
+                                          value={profile.avatarRotate || 0}
+                                          onChange={(e) => setProfile({...profile, avatarRotate: parseInt(e.target.value)})}
+                                          className="w-full h-1 bg-[#8E9AAF]/20 rounded-full appearance-none accent-[#8A9A5B] cursor-pointer"
+                                       />
+                                    </div>
+                                 </div>
+                              </div>
+
+                              <div className="space-y-3">
+                                 <p className="text-[10px] font-bold uppercase opacity-40 tracking-widest">DNA Seed</p>
+                                 <div className="flex flex-col gap-2">
+                                    <input 
+                                       type="text" 
+                                       value={profile.avatarSeed}
+                                       onChange={(e) => setProfile({...profile, avatarSeed: e.target.value})}
+                                       placeholder="Unique hash..."
+                                       className="w-full px-4 py-2 rounded-xl bg-[#8A9A5B]/5 border-none outline-none text-[10px] font-mono focus:ring-2 focus:ring-[#8A9A5B]/20"
+                                    />
+                                    <button 
+                                       onClick={() => setProfile({...profile, avatarSeed: Math.random().toString(36).substring(7)})}
+                                       className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#8A9A5B] text-white text-[10px] font-bold shadow-md hover:brightness-110"
+                                    >
+                                       <RefreshCw size={12} /> Mutate
+                                    </button>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -431,9 +524,11 @@ const App: React.FC = () => {
                     </form>
                   ) : (
                     <div className="space-y-6">
-                      <div>
-                        <h3 className="text-5xl font-bold serif-font tracking-tight">{profile.name}</h3>
-                        <p className="text-lg opacity-60 mt-3 max-w-lg leading-relaxed">{profile.bio}</p>
+                      <div className="flex items-start justify-between">
+                         <div>
+                           <h3 className="text-5xl font-bold serif-font tracking-tight">{profile.name}</h3>
+                           <p className="text-lg opacity-60 mt-3 max-w-lg leading-relaxed">{profile.bio}</p>
+                         </div>
                       </div>
                       <div className="flex flex-wrap gap-6 pt-6">
                         <div className="px-6 py-4 glass-card bg-[#E5E4E2]/30 flex flex-col items-center min-w-[120px]">
@@ -449,113 +544,51 @@ const App: React.FC = () => {
                           <p className="text-3xl font-bold mt-1">{stats.vocabulary}</p>
                         </div>
                       </div>
-                      <button onClick={() => setIsProfileEditing(true)} className="flex items-center gap-3 text-sm font-bold text-[#8A9A5B] hover:scale-105 transition-all mt-6 px-6 py-3 glass-card bg-[#8A9A5B]/5">
-                        <Edit3 size={18} /> Edit Sanctuary Persona
-                      </button>
+                      <div className="flex gap-4 pt-4">
+                        <button onClick={() => setIsProfileEditing(true)} className="flex items-center gap-3 text-sm font-bold text-[#8A9A5B] hover:scale-105 transition-all px-8 py-3.5 glass-card bg-[#8A9A5B]/5 shadow-sm">
+                           <Edit3 size={18} /> Edit Persona Details
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                <div className="lg:col-span-2 glass-card p-0 overflow-hidden">
-                  <button 
-                    onClick={() => setIsAvatarStudioOpen(!isAvatarStudioOpen)}
-                    className="w-full flex items-center justify-between p-10 hover:bg-white/10 transition-colors group"
-                  >
-                    <h4 className="text-2xl font-bold serif-font flex items-center gap-3">
-                      <Palette size={24} className="text-[#8E9AAF]" /> Avatar Studio
-                    </h4>
-                    <ChevronDown size={24} className={`text-[#8E9AAF] transition-transform duration-300 ${isAvatarStudioOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {isAvatarStudioOpen && (
-                    <div className="p-10 pt-0 space-y-10 animate-in fade-in slide-in-from-top-4 duration-300">
-                      <div className="space-y-8">
-                        {/* Style Selection */}
-                        <div className="space-y-4">
-                          <p className="text-xs font-bold uppercase opacity-40 tracking-widest">Choose a Style</p>
-                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                            {AVATAR_STYLES.map(style => (
-                              <button 
-                                key={style.id}
-                                onClick={() => setProfile({...profile, avatarChoice: style.id})}
-                                className={`p-2 rounded-2xl transition-all border-2 flex flex-col items-center group ${profile.avatarChoice === style.id ? 'border-[#8A9A5B] bg-[#8A9A5B]/10 scale-105' : 'border-transparent bg-white/10 hover:bg-white/40'}`}
-                              >
-                                <div className="w-12 h-12 mb-1 overflow-hidden rounded-full">
-                                   <img src={`https://api.dicebear.com/7.x/${style.id}/svg?seed=preview`} className="w-full h-full group-hover:scale-110 transition-transform" alt={style.label} />
-                                </div>
-                                <p className="text-[8px] font-bold uppercase tracking-tighter opacity-60">{style.label}</p>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Customization Controls */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-[#border]">
-                          <div className="space-y-4">
-                            <p className="text-xs font-bold uppercase opacity-40 tracking-widest">Orientation</p>
-                            <div className="flex items-center gap-4">
-                               <button 
-                                onClick={() => setProfile({...profile, avatarFlip: !profile.avatarFlip})}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border-2 ${profile.avatarFlip ? 'bg-[#8A9A5B] text-white border-[#8A9A5B]' : 'bg-transparent border-[#border] opacity-60'}`}
-                               >
-                                <FlipHorizontal size={14} /> Flip
-                               </button>
-                               <div className="flex-1 space-y-2">
-                                 <div className="flex justify-between text-[10px] font-bold opacity-40">
-                                    <span>ROTATION</span>
-                                    <span>{profile.avatarRotate || 0}°</span>
-                                 </div>
-                                 <input 
-                                  type="range" min="0" max="360" step="45"
-                                  value={profile.avatarRotate || 0}
-                                  onChange={(e) => setProfile({...profile, avatarRotate: parseInt(e.target.value)})}
-                                  className="w-full h-1 bg-[#8E9AAF]/20 rounded-full appearance-none accent-[#8A9A5B] cursor-pointer"
-                                 />
-                               </div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-4">
-                            <p className="text-xs font-bold uppercase opacity-40 tracking-widest">Visual Hash</p>
-                            <div className="flex gap-2">
-                              <input 
-                                type="text" 
-                                value={profile.avatarSeed}
-                                onChange={(e) => setProfile({...profile, avatarSeed: e.target.value})}
-                                placeholder="Unique seed..."
-                                className="flex-1 px-4 py-2 glass-card bg-white/30 border-none outline-none text-xs focus:ring-2 focus:ring-[#8A9A5B]/20"
-                              />
-                              <button 
-                                onClick={() => setProfile({...profile, avatarSeed: Math.random().toString(36).substring(7)})}
-                                className="p-2 glass-card bg-[#8A9A5B] text-white"
-                              >
-                                <RefreshCw size={14} />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div className="glass-card p-10 flex flex-col items-center justify-center text-center space-y-6 h-full">
+                  <div className="p-6 bg-[#D2B48C]/10 rounded-full">
+                    <TrendingUp size={48} className="text-[#D2B48C]" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-bold serif-font">Reader Velocity</h4>
+                    <p className="text-sm opacity-50 max-w-xs mt-2 mx-auto">You've successfully deciphered {stats.completed} books toward your target of {profile.readingGoal}.</p>
+                  </div>
+                  <div className="w-full h-6 bg-[#8E9AAF]/10 rounded-full overflow-hidden relative shadow-inner p-1">
+                    <div className="h-full bg-gradient-to-r from-[#8A9A5B] to-[#D2B48C] rounded-full transition-all duration-1000" style={{ width: `${stats.progressToGoal}%` }}></div>
+                    <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#344037] mix-blend-overlay">
+                      {stats.progressToGoal}% Complete
+                    </span>
+                  </div>
                 </div>
 
-                <div className="space-y-8">
-                  <div className="glass-card p-10 flex flex-col items-center justify-center text-center space-y-6 h-full">
-                    <div className="p-6 bg-[#D2B48C]/10 rounded-full">
-                      <TrendingUp size={48} className="text-[#D2B48C]" />
-                    </div>
-                    <div>
-                      <h4 className="text-2xl font-bold serif-font">Reader Velocity</h4>
-                      <p className="text-sm opacity-50 max-w-xs mt-2 mx-auto">You've successfully deciphered {stats.completed} books toward your target of {profile.readingGoal}.</p>
-                    </div>
-                    <div className="w-full h-6 bg-[#8E9AAF]/10 rounded-full overflow-hidden relative shadow-inner p-1">
-                      <div className="h-full bg-gradient-to-r from-[#8A9A5B] to-[#D2B48C] rounded-full transition-all duration-1000" style={{ width: `${stats.progressToGoal}%` }}></div>
-                      <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[#344037] mix-blend-overlay">
-                        {stats.progressToGoal}% Complete
-                      </span>
-                    </div>
+                <div className="glass-card p-10 space-y-8">
+                   <h4 className="text-2xl font-bold serif-font flex items-center gap-3">
+                    <PieChart size={24} className="text-[#8A9A5B]" /> Literary Balance
+                  </h4>
+                  <div className="space-y-4">
+                     {Object.entries(stats.genreDistribution).map(([genre, count]) => (
+                        <div key={genre} className="flex items-center gap-4">
+                           <span className="text-[10px] font-bold uppercase opacity-40 w-24 truncate">{genre}</span>
+                           <div className="flex-1 h-2 bg-[#8E9AAF]/10 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-[#8A9A5B] rounded-full" 
+                                style={{ width: `${(count / stats.total) * 100}%` }}
+                              ></div>
+                           </div>
+                           <span className="text-[10px] font-bold opacity-60">{count}</span>
+                        </div>
+                     ))}
+                     {stats.total === 0 && <p className="text-xs opacity-40 italic text-center py-8">No data to map yet.</p>}
                   </div>
                 </div>
               </div>
