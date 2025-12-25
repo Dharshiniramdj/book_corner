@@ -4,68 +4,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spring Book Corner - Your Botanical Library</title>
+    <title>Book Corner - Save the Air</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Lexend:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --sprout: #a7c957;
-            --leaf: #6a994e;
-            --blossom: #f28482;
-            --buttercup: #f4e285;
-            --bark: #bc8a5f;
-            --petal: #fdf0d5;
+            /* Save the Air Palette - New Colors */
+            --platinum: #E5E4E2;
+            --turtle-green: #8A9A5B;
+            --gray-blue: #8E9AAF;
+            --tan: #D2B48C;
+            --coconut: #FFF1E1;
+            
+            --bg-main: var(--coconut);
+            --bg-card: rgba(255, 255, 255, 0.75);
+            --text-primary: #344037;
+            --text-secondary: #5A6D60;
+            --border: rgba(138, 154, 91, 0.2);
+            --accent: var(--turtle-green);
+        }
+
+        [data-theme='dusk'] {
+            --bg-main: #1C2321;
+            --bg-card: rgba(44, 54, 48, 0.7);
+            --text-primary: var(--platinum);
+            --text-secondary: var(--gray-blue);
+            --border: rgba(142, 154, 175, 0.3);
+            --coconut: #242B28;
+            --tan: #4A3F35;
         }
 
         body {
             font-family: 'Lexend', sans-serif;
-            background-color: #f7f9f2; 
-            background-image: 
-                radial-gradient(circle at 2px 2px, rgba(167, 201, 87, 0.05) 1px, transparent 0);
-            background-size: 40px 40px;
-            color: #386641;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.6s ease;
             overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(138, 154, 91, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(142, 154, 175, 0.05) 0%, transparent 40%);
         }
 
         .serif-font { font-family: 'Crimson Pro', serif; }
 
-        .spring-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
-            border: 2px solid rgba(167, 201, 87, 0.2);
-            border-radius: 2rem;
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 2.5rem;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
         }
 
-        .spring-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--sprout);
-            box-shadow: 0 15px 30px -10px rgba(106, 153, 78, 0.15);
+        .glass-card:hover {
+            box-shadow: 0 25px 50px -12px rgba(138, 154, 91, 0.15);
+            transform: translateY(-2px);
+            border-color: var(--turtle-green);
         }
 
-        /* Whimsical Animations */
         @keyframes float {
             0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(1deg); }
+            50% { transform: translateY(-8px) rotate(0.5deg); }
             100% { transform: translateY(0px) rotate(0deg); }
         }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-
-        @keyframes sway {
-            0% { transform: rotate(-2deg); }
-            50% { transform: rotate(2deg); }
-            100% { transform: rotate(-2deg); }
-        }
-        .animate-sway { animation: sway 4s ease-in-out infinite; }
+        .animate-float { animation: float 8s ease-in-out infinite; }
 
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f7f9f2; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
-            background: #a7c957;
-            border-radius: 10px;
+            background: var(--gray-blue);
+            border-radius: 20px;
+            border: 2px solid var(--bg-main);
+        }
+
+        .rainbow-gradient {
+            background: linear-gradient(135deg, var(--platinum), var(--turtle-green), var(--gray-blue), var(--tan), var(--coconut));
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         @media print {

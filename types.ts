@@ -1,5 +1,5 @@
 
-export type Genre = 'Novel' | 'Self-Help' | 'Philosophy' | 'Web Novel' | 'Manga' | 'Manhwa' | 'Textbook' | 'Other';
+export type Genre = 'Novel' | 'Self-Help' | 'Philosophy' | 'Web Novel' | 'Manga' | 'Manhwa' | 'Manhua' | 'Textbook' | 'Other';
 
 export interface Vocabulary {
   id: string;
@@ -22,8 +22,9 @@ export interface UserProfile {
   readingGoal: number;
   favoriteGenre: string;
   avatarSeed: string;
-  // Changed from specific union to string to support all available Dicebear styles used in the app, fixing type error on initial profile state.
   avatarChoice: string;
+  avatarFlip?: boolean;
+  avatarRotate?: number;
 }
 
 export interface Book {
